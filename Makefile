@@ -7,7 +7,7 @@ VENV_VERSION = 20.24.3
 VENV_DIR := .pyenv-$(shell uname)
 PYTHON_BIN := $(VENV_DIR)/bin/python
 
-PYTHON := . $(VENV_DIR)/bin/activate; python
+PYTHON := python3
 PYTEST := $(PYTHON) -m pytest
 
 MAKO_RENDER := etc/bin/mako-render
@@ -22,7 +22,7 @@ GEN_LIB_SRC = $(GEN_SRC)/lib
 MAKO_SRC = src/generator/templates
 RUST_SRC = src/rust
 PREPROC_DIR = $(RUST_SRC)/preproc
-PREPROC = target/release/preproc
+PREPROC = /mnt/scratch/cargo_target/release/preproc
 API_DEPS_TPL = $(MAKO_SRC)/deps.mako
 API_DEPS = .api.deps
 CLI_DEPS = .cli.deps
@@ -71,7 +71,7 @@ $(PYTHON_BIN): $(VENV_BIN) requirements.txt
 	python3 -m virtualenv -p python3 $(VENV_DIR)
 	$@ -m pip install -r requirements.txt
 
-$(MAKO_RENDER): $(PYTHON_BIN) $(wildcard $(GEN_LIB_SRC)/*)
+$(MAKO_RENDER): $(wildcard $(GEN_LIB_SRC)/*)
 
 # Explicitly NOT depending on $(MAKO_LIB_FILES), as it's quite stable and now takes 'too long' thanks
 # to a URL get call to the google discovery service
@@ -93,12 +93,12 @@ license: LICENSE.md
 
 regen-apis: | clean-all-api clean-all-cli gen-all-api gen-all-cli license
 
-test-gen: $(PYTHON_BIN)
+test-gen:
 	export PYTEST_DISABLE_PLUGIN_AUTOLOAD=1; $(PYTEST) src
 
 test: test-gen
 
-typecheck: $(PYTHON_BIN)
+typecheck:
 	$(PYTHON) -m pyright $(GEN_LIB_SRC)
 
 clean: clean-all-api clean-all-cli docs-all-clean
